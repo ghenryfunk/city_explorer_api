@@ -8,7 +8,7 @@ const { response, request } = require('express');
 require('dotenv').config();
 
 // Declare our port for our server to listen on
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 
 // Instanciate express
 const app = express();
@@ -29,17 +29,17 @@ app.get('/location', (request, response) => {
   response.send(location);
 });
 
-app.get('/weather', (request, response) => {
-  let data = require('./data/weather.json');
-});
+// app.get('/weather', (request, response) => {
+//   let data = require('./data/weather.json');
+// });
 
 // Create a constructor to tailor our incoming raw data
 
 function Location(obj, query) {
-  this.lat = obj.lat;
-  this.lon = obj.lon;
+  this.latitude = obj.lat;
+  this.longitude = obj.lon;
   this.search_query = query;
-  this.location = obj.display_name;
+  this.formatted_query = obj.display_name;
 }
 
 
