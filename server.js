@@ -8,7 +8,7 @@ const { response, request } = require('express');
 require('dotenv').config();
 
 // Declare our port for our server to listen on
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 
 // Instanciate express
 const app = express();
@@ -29,9 +29,15 @@ app.get('/location', (request, response) => {
   response.send(location);
 });
 
-// app.get('/weather', (request, response) => {
-//   let data = require('./data/weather.json');
-// });
+app.get('/weather', (request, response) => {
+  let data = require('./data/weather.json');
+  let weatherArray = [];
+  data.data.forEach(value => {
+    let weather = new Weather(value);
+    weatherArray.push(weather);
+  });
+  response.send(weatherArray);
+});
 
 // Create a constructor to tailor our incoming raw data
 
@@ -40,6 +46,11 @@ function Location(obj, query) {
   this.longitude = obj.lon;
   this.search_query = query;
   this.formatted_query = obj.display_name;
+}
+
+function Weather(obj) {
+  this.forecast = obj.weather.description;
+  this.time = obj.datetime;
 }
 
 
