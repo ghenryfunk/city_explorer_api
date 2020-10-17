@@ -9,6 +9,12 @@
 ## Heroku deployment link:
 - [deployed page:](https://city-explorer-api301n19.herokuapp.com/)<br>https://city-explorer-api301n19.herokuapp.com/
 
+## API keys
+- Weatherbit API key: be5b960aac8b4f45a520bc63ab82d17c
+- TMDB API key: 3d3c8dde2e3ed079350dd828ee261630
+- LocationIQ API access token (same as key?): pk.40b476fbea513c219352a8035d264ce8
+- Hiking Poject Data API: 200949956-63704f5f9ef2c33b2541a8e9b600c7e1
+
 <!-- Provide a high level overview of what this application is and why you are building it, beyond the fact that it's an assignment for this class. (i.e. What's your problem domain?) -->
 
 ## Getting Started
