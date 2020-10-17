@@ -32,7 +32,7 @@ app.get('/location', (request, response) => {
 app.get('/weather', (request, response) => {
   let data = require('./data/weather.json');
   let weatherArray = [];
-  data.data.forEach(value => {
+  data.data.map(value => {
     let weather = new Weather(value);
     weatherArray.push(weather);
   });
