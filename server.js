@@ -37,13 +37,13 @@ function locationHandler(req, res) {
   superagent
     .get(URL)
     .then((data) => {
-      console.log(data.body[0]);
+      // console.log(data.body[0]);
       let location = new Location(city, data.body[0]);
       res.status(200).json(location);
     })
     .catch((error) => {
       console.log('error', error);
-      res.status(500).send('something went wrong');
+      res.status(500).send('something went wrong with location API');
     });
   // try {
   //   let city = req.query.city;
@@ -59,17 +59,32 @@ function locationHandler(req, res) {
 }
 
 function weatherHandler(req, res) {
-  let city = req.query.city;
+  let city = req.query.search_query;
+  console.log('city is ', city);
 
   // let data = require('./data/weather.json');
   let key = process.env.WEATHER_API_KEY;
 
-  const URL = `https://api.weatherbit.io/v2.0/current?city=${city}&key=${key}`;
+  const URL = `https://api.weatherbit.io/v2.0/forecast/daily?city=${city}&key=${key}&days=7`;
 
-  // let weatherArray = [];
   superagent.get(URL).then(data => {
-    console.log(data._events); //MY POSTMAN LINK SEEMS TO BE VERY DIFFERENT FROM WHATEVER THIS GIVES BACK TO ME
-  });
+    console.log(data.body.data); //MY POSTMAN LINK SEEMS TO BE VERY DIFFERENT FROM WHATEVER THIS GIVES BACK TO ME
+    let weatherArray = [];
+    weatherArray.push(data.body.data);
+    console.log('weatherArray is', weatherArray[0]);
+    console.log('typeof weatherArray is', typeof(weatherArray[0]));
+    console.log(Object.keys(weatherArray[0]));
+    // data.body.data.map((value, i) => {
+    //   console.log(value);
+    //   let weather = new Weather(value, i);
+    //   weatherArray.push(weather);
+    //   res.status(200).json(weatherArray);
+    // });
+  })
+    .catch((error) => {
+      console.log('error', error);
+      res.status(500).send('something went wrong with weather API');
+    });
   // data.data.map((value) => {
   //   let weather = new Weather(value);
   //   weatherArray.push(weather);
@@ -86,9 +101,9 @@ function Location(query, obj) {
   this.formatted_query = obj.display_name;
 }
 
-function Weather(obj) {
-  this.forecast = obj.weather.description;
-  this.time = obj.headers.date;
+function Weather(obj, i) {
+  this.forecast = obj.body.data[i].weather.description;
+  this.time = obj.body.data[i].valid_date;
 }
 
 // Start our server! Tell it what port to listen on
