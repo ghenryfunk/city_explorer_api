@@ -4,7 +4,7 @@
 const express = require('express');
 const cors = require('cors');
 const superagent = require('superagent');
-const { response, request } = require('express');
+// const { response, request } = require('express');
 
 require('dotenv').config();
 
@@ -59,18 +59,22 @@ function locationHandler(req, res) {
 }
 
 function weatherHandler(req, res) {
-  try {
-    let data = require('./data/weather.json');
-    let weatherArray = [];
-    data.data.map((value) => {
-      let weather = new Weather(value);
-      weatherArray.push(weather);
-    });
-    res.send(weatherArray);
-  } catch (error) {
-    console.log('ERROR', error);
-    res.status(500).send('ERROR: Something broke. Sorry');
-  }
+  let city = req.query.city;
+
+  // let data = require('./data/weather.json');
+  let key = process.env.WEATHER_API_KEY;
+
+  const URL = `https://api.weatherbit.io/v2.0/current?city=${city}&key=${key}`;
+
+  // let weatherArray = [];
+  superagent.get(URL).then(data => {
+    console.log(data._events); //MY POSTMAN LINK SEEMS TO BE VERY DIFFERENT FROM WHATEVER THIS GIVES BACK TO ME
+  });
+  // data.data.map((value) => {
+  //   let weather = new Weather(value);
+  //   weatherArray.push(weather);
+  // });
+  // res.send(weatherArray);
 }
 
 // Create a constructor to tailor our incoming raw data
@@ -84,7 +88,7 @@ function Location(query, obj) {
 
 function Weather(obj) {
   this.forecast = obj.weather.description;
-  this.time = obj.datetime;
+  this.time = obj.headers.date;
 }
 
 // Start our server! Tell it what port to listen on
