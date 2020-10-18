@@ -19,6 +19,7 @@
 
 ## Getting Started
 <!-- What are the steps that a user must take in order to build this app on their own machine and get it running? -->
+## Lab 06
 ### Steps to create a Server
 1. Make a 'server.js' file
 1. In your terminal, navigate to the folder that server.js is located in and run npm init -y
@@ -40,6 +41,14 @@
   })
   ```
 1. Now we can actually start our server! Go to your terminal and type nodemon
+
+## Lab 07
+### Adding superagent
+1. Just add it as a depdendency like we already did w/ express, cors, and dotenv. Type in server.js:
+  ``` 
+  const superagent = require('superagent');
+  ```
+1. Install superagent in your terminal by typing 'npm install superagent'
 
 ## Architecture
 <!-- Provide a detailed description of the application design. What technologies (languages, libraries, etc) you're using, and any other relevant design information. -->
