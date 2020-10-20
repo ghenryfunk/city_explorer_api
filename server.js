@@ -68,18 +68,18 @@ function weatherHandler(req, res) {
   const URL = `https://api.weatherbit.io/v2.0/forecast/daily?city=${city}&key=${key}&days=7`;
 
   superagent.get(URL).then(data => {
-    console.log(data.body.data); //MY POSTMAN LINK SEEMS TO BE VERY DIFFERENT FROM WHATEVER THIS GIVES BACK TO ME
+    console.log(data.body.data[0]); //MY POSTMAN LINK SEEMS TO BE VERY DIFFERENT FROM WHATEVER THIS GIVES BACK TO ME
     let weatherArray = [];
-    weatherArray.push(data.body.data);
-    console.log('weatherArray is', weatherArray[0]);
-    console.log('typeof weatherArray is', typeof(weatherArray[0]));
-    console.log(Object.keys(weatherArray[0]));
-    // data.body.data.map((value, i) => {
-    //   console.log(value);
-    //   let weather = new Weather(value, i);
-    //   weatherArray.push(weather);
-    //   res.status(200).json(weatherArray);
-    // });
+    // weatherArray.push(data.body.data);
+    // console.log('weatherArray is', weatherArray[0]);
+    // console.log('typeof weatherArray is', typeof(weatherArray[0]));
+    // console.log(Object.keys(weatherArray[0]));
+    Object.keys(data.body.data).map((value, i) => {
+      console.log('value being passed in to .map loop is ', value);
+      let weather = new Weather(value, i);
+      weatherArray.push(weather);
+      res.status(200).json(weatherArray);
+    });
   })
     .catch((error) => {
       console.log('error', error);
