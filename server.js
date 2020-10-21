@@ -26,6 +26,8 @@ app.get('/location', locationHandler);
 
 app.get('/weather', weatherHandler);
 
+app.get('/trails', trailsHandler);
+
 // Create handler functions for our different routes:
 
 function locationHandler(req, res) {
@@ -37,7 +39,6 @@ function locationHandler(req, res) {
   superagent
     .get(URL)
     .then((data) => {
-      // console.log(data.body[0]);
       let location = new Location(city, data.body[0]);
       res.status(200).json(location);
     })
@@ -59,17 +60,18 @@ function locationHandler(req, res) {
 }
 
 function weatherHandler(req, res) {
-  let city = req.query.search_query;
-  console.log('city is ', city);
+  // let city = req.query.search_query;
+  let lat = req.query.latitude;
+  let lon = req.query.longitude;
 
   // let data = require('./data/weather.json');
   let key = process.env.WEATHER_API_KEY;
 
-  const URL = `https://api.weatherbit.io/v2.0/forecast/daily?city=${city}&key=${key}&days=7`;
+  const URL = `https://api.weatherbit.io/v2.0/forecast/daily?&lat=${lat}&lon=${lon}&key=${key}&days=7`;
 
   superagent.get(URL).then(data => {
     const weatherArray = data.body.data.map((value, i) => {
-      console.log('value being passed in to .map loop is ', value);
+      // console.log('value being passed in to .map loop is ', value);
       return new Weather(value, i);
       // weatherArray.push(weather);
     });
@@ -86,6 +88,28 @@ function weatherHandler(req, res) {
   // res.send(weatherArray);
 }
 
+function trailsHandler(req, res) {
+  let lat = req.query.latitude;
+  let lon = req.query.longitude;
+
+  let key = process.env.TRAIL_API_KEY;
+
+  const URL = `https://www.hikingproject.com/data/get-trails?lat=${lat}&lon=${lon}&maxDistance=10&key=${key}`;
+
+  superagent.get(URL).then(data => {
+    const trailArray = data.body.trails.map(value => {
+      console.log('value is ', value);
+      return new Trails(value);
+    });
+    res.status(200).json(trailArray);
+    console.log('trail data is ', data.body.trails[0]);
+  })
+    .catch((error) => {
+      console.log('error', error);
+      res.status(500).send('something went wrong with trails API');
+    });
+}
+
 // Create a constructor to tailor our incoming raw data
 
 function Location(query, obj) {
@@ -98,6 +122,18 @@ function Location(query, obj) {
 function Weather(obj) {
   this.forecast = obj.weather.description;
   this.time = obj.valid_date;
+}
+
+function Trails(obj) {
+  this.name = obj.name;
+  this.location = obj.location;
+  this.length = obj.length;
+  this.stars = obj.stars;
+  this.star_votes = obj.starVotes;
+  this.summary = obj.summary;
+  this.trail_url = obj.url;
+  this.conditions = obj.conditionStatus;
+  this.ocndition_date = obj.conditionDate;
 }
 
 // Start our server! Tell it what port to listen on
