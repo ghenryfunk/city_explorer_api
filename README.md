@@ -26,17 +26,17 @@
   const cors = require('cors');
   require('dotenv').config();
   ```
-1. Within the .env file, type PORT=3000
-1. Declare our port for our server to listen to in server.js by typing const PORT = process.env.PORT || 3000
-1. Instantiate express in server.js by typing const app = express();
-1. Use cors (cross origin resource sharing) in server.js by typing app.use(cors());
-1. Start our server! Do this in server.js by typing 
+4. Within the .env file, type PORT=3000
+5. Declare our port for our server to listen to in server.js by typing const PORT = process.env.PORT || 3000
+6. Instantiate express in server.js by typing const app = express();
+7. Use cors (cross origin resource sharing) in server.js by typing app.use(cors());
+8. Start our server! Do this in server.js by typing 
   ```
   app.listen(PORT, () => {
     console.log(`Server is now listening on port ${PORT}`);
   })
   ```
-1. Now we can actually start our server! Go to your terminal and type nodemon
+9. Now we can actually start our server! Go to your terminal and type nodemon
 
 ## Lab 07
 ### Adding superagent

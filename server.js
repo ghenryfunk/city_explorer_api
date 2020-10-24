@@ -33,38 +33,38 @@ app.get('/weather', weatherHandler);
 app.get('/trails', trailsHandler);
 
 // I think I need to add a URL or change the route name here to actually send things to by database
-app.get('/add', (req, res) => {
-  const search_query = req.query.city;
+// app.get('/add', (req, res) => {
+//   const search_query = req.query.city;
 
-  const SQL = `INSERT INTO cities (search_query) VALUES ($1) RETURNING *`;
-  const safeValues = [search_query];
+//   const SQL = `INSERT INTO cities (search_query) VALUES ($1) RETURNING *`;
+//   const safeValues = [search_query];
 
-  client
-    .query(SQL, safeValues)
-    .then((results) => {
-      console.log(results);
-      res.status(200).json(results.rows); // optional line here to send stuff to the front end so you know you successfully added something without checking the console log
-    })
-    .catch((error) => {
-      console.log('Error', error);
-      res.status(500).send('Something went wrong');
-    });
-});
+//   client
+//     .query(SQL, safeValues)
+//     .then((results) => {
+//       console.log(results);
+//       res.status(200).json(results.rows); // optional line here to send stuff to the front end so you know you successfully added something without checking the console log
+//     })
+//     .catch((error) => {
+//       console.log('Error', error);
+//       res.status(500).send('Something went wrong');
+//     });
+// });
 
 // This is what sends the table data we're populating in our database back to the front end... I think
-app.get('/city', (req, res) => {
-  const SQL = 'SELECT search_query FROM cities';
+// app.get('/city', (req, res) => {
+//   const SQL = 'SELECT search_query FROM cities';
 
-  client
-    .query(SQL)
-    .then((results) => {
-      res.status(200).json(results.rows);
-    })
-    .catch((error) => {
-      console.log('Error', error);
-      res.status(500).send('Something went wrong');
-    });
-});
+//   client
+//     .query(SQL)
+//     .then((results) => {
+//       res.status(200).json(results.rows);
+//     })
+//     .catch((error) => {
+//       console.log('Error', error);
+//       res.status(500).send('Something went wrong');
+//     });
+// });
 
 app.use('*', notFoundHandler);
 
@@ -74,30 +74,85 @@ function locationHandler(req, res) {
   let city = req.query.city;
   let key = process.env.LOCATIONIQ_API_KEY; // my API key is stored as a variable in .env
 
-  const URL = `http://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
+  const SQL = 'SELECT * FROM cities WHERE search_query=$1';
 
-  superagent
-    .get(URL)
-    .then((data) => {
-      let location = new Location(city, data.body[0]);
-      res.status(200).json(location);
+  const safeValue = [city];
+
+  client
+    .query(SQL, safeValue)
+    .then((results) => {
+      console.log('results rows for SQL locationHandler is ', results.rows);
+      if (results.rows.length > 0) {
+        console.log('Database was used!');
+        res.status(200).send(results.rows[0]);
+      } else {
+        const URL = `http://us1.locationiq.com/v1/search.php?key=${key}&q=${city}&format=json`;
+
+        superagent.get(URL).then((data) => {
+          let location = new Location(city, data.body[0]);
+          let search_query = location.search_query;
+          let formatted_query = location.formatted_query;
+          let lat = location.latitude;
+          let lon = location.longitude;
+          const safeValue = [search_query, formatted_query, lat, lon];
+
+          const SQL =
+            'INSERT INTO cities (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4) RETURNING *';
+
+
+          client
+            .query(SQL, safeValue)
+            .then((results) => {
+              console.log(
+                'this is a new entry into the database',
+                results.rows
+              );
+            })
+            .catch((error) => {
+              console.log('Error', error);
+              res
+                .status(500)
+                .send('Something went wrong with new entry into database');
+            });
+          res.status(200).json(location);
+        });
+        // .catch((error) => {
+        //   console.log('error', error);
+        //   res.status(500).send('something went wrong with the location API');
+        // });
+      }
     })
     .catch((error) => {
       console.log('error', error);
-      res.status(500).send('something went wrong with location API');
+      res.status(500).send('something went wrong');
     });
-  // try {
-  //   let city = req.query.city;
-  //   // simulate getting the data from a database or API, using a flat file
-  //   let data = require('./data/location.json')[0];
-  //   let location = new Location(data, city);
-  //   res.send(location);
-  // }
-  // catch (error) {
-  //   console.log('ERROR', error);
-  //   res.status(500).send('ERROR: Something broke. Sorry');
-  // }
 }
+
+// .catch((error) => {
+//   console.log('error', error);
+//   res.status(500).send('Something went wrong at the end of locationHandler');
+// });
+// superagent
+//   .get(URL)
+//   .then((data) => {
+//     let location = new Location(city, data.body[0]);
+//     res.status(200).json(location);
+//   })
+//   .catch((error) => {
+//     console.log('error', error);
+//     res.status(500).send('something went wrong with location API');
+//   });
+// try {
+//   let city = req.query.city;
+//   // simulate getting the data from a database or API, using a flat file
+//   let data = require('./data/location.json')[0];
+//   let location = new Location(data, city);
+//   res.send(location);
+// }
+// catch (error) {
+//   console.log('ERROR', error);
+//   res.status(500).send('ERROR: Something broke. Sorry');
+// }
 
 function weatherHandler(req, res) {
   // let city = req.query.search_query;
