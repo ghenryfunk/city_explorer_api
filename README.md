@@ -46,6 +46,134 @@
   ```
 1. Install superagent in your terminal by typing 'npm install superagent'
 
+## Lab 08
+### Creating a Database
+1. Bring in posgress dependency in server.js by typing:
+  ```
+  const pg = require('pg');
+  ```
+2. Create our postgres client
+  ```
+  const client = new pg.Client(process.env.DATABASE_URL);
+  ```
+3. In .env file, type:
+  ```
+  DATABASE_URL=postgres://localhost:5432/dbName
+  ```
+4. Establish a route back in server.js
+  ```
+  app.use('*', notFoundHandler);
+  ```
+5. Declare notFoundHandler:
+  ```
+  function notFoundHandler(req, res) {
+  res.status(404).send('Not found!');
+}
+  ```
+6. Connect to our database and start our server
+  ``` 
+  client
+  .connect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Now listening on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.log('Error', err);
+  });
+  ```
+7. Now run Nodemon to see if it's working
+  - If it's not working, likely because you didn't actually create your database yet (called dbName in the above example, declared at the end of the URL)
+
+8. To create the database, go to your terminal and type psql:
+```
+CREATE DATABASE dbName;
+```
+- now check it worked by typing 
+```
+\c dbName
+```
+- this will also CONNECT YOU to the database
+- check if there are any tables (relations) in the database by typing:
+```
+\dt
+```
+- There should not be any tables yet, so we need to create one or more to store data in later (create relational structure for our databse?) To do this, make sure you're in your database so it should look like:
+```
+dbName=# CREATE TABLE tableName (id SERIAL KEY, column_name_1 VARCHAR(255), column_name_2 VARCHAR(255));
+```
+    - *// you can add as many columns here as you need
+    - // Serial Primary Key just numbers your rows for you automatically
+    - // VARCHAR is specifying variable characters capped at 255 characters for your input
+- Now you can check that you actually created your table by typing:
+    ``` 
+    \dt
+    ```
+9. Now let's go back to VS CODE because editing our table in the terminal EVERY TIME would be a pain. CREATE a new file called schema.sql
+10. In schema.sql first line should check if the table exists and drop it if it does as we will be instantiating (or re-installing in this case) the table below. But first type:
+  ```
+  DROP TABLE if exists tableName;
+  ```
+11. Now instantiate/ create the table by typing:
+  ```
+  CREATE TABLE tableName (
+  id SERIAL PRIMARY KEY, 
+  column_name_1 VARCHAR(255),
+  column_name_2 VARCHAR(255)
+);
+  ```
+12. To check that the schema.sql above is linked and working, go back to the terminal and quit out of psql by typing \q
+  - Then type the following command to see if it shows "DROP TABLE CREATE TABLE"
+  ```
+  psql -f schema.sql -d dbName
+  ```
+  - If you want to get back into psql to check your table, type this in terminal:
+  ```
+  psql -d dbName
+  \dt
+  SELECT * FROM tableName;
+  ```
+13. Now we return to node land aka VS CODE to create a route for the user to use that will actually add data to our database. To do this, go to the route section of server.js and type:
+  ```
+  app.get('/add', (req, res) => {
+  const column_name_1 = req.query.___;
+  const column_name_2 = req.query.___;
+
+  const SQL = `INSERT INTO tableName (column_name_1, column_name_2) VALUES ($1, $2) RETURNING *`;
+  const safeValues = [column_name_1, column_name_2];
+
+  client
+    .query(SQL, safeValues)
+    .then((results) => {
+      console.log(results);
+      res.status(200).json(results.rows); // optional line here to send stuff to the front end so you know you successfully added something without checking the console log
+    })
+    .catch((error) => {
+      console.log('Error', error);
+      res.status(500).send('Something went wrong');
+    });
+});
+```
+14. Now we need to type another route to get the entered data back (...?). Do this by typing a new route right below the /add route:
+```
+app.get('/tableName', (req, res) => {
+  const SQL = 'SELECT column_name_1, column_name_2 FROM tableName';
+
+  client
+    .query(SQL)
+    .then((results) => {
+      res.status(200).json(results.rows);
+    })
+    .catch((error) => {
+      console.log('Error', error);
+      res.status(500).send('Something went wrong');
+    });
+});
+```
+
+  
+
 ## Architecture
 <!-- Provide a detailed description of the application design. What technologies (languages, libraries, etc) you're using, and any other relevant design information. -->
 
