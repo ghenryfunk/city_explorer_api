@@ -32,6 +32,8 @@ app.get('/weather', weatherHandler);
 
 app.get('/trails', trailsHandler);
 
+app.get('/movies', movieHandler);
+
 // I think I need to add a URL or change the route name here to actually send things to by database
 // app.get('/add', (req, res) => {
 //   const search_query = req.query.city;
@@ -209,6 +211,29 @@ function trailsHandler(req, res) {
     });
 }
 
+function movieHandler(req, res) {
+  let city = req.query.search_query;
+  console.log('city is ', city);
+  let key = process.env.MOVIE_API_KEY;
+  let URL = `https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${city}&page=1&include_adult=false`;
+  // `https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${city}&include_adult=false`;
+  // `https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${city}&page=1&include_adult=false`;
+  // `https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${city}&page=1&include_adult=false`;
+
+  superagent.get(URL).then((data) => {
+    let movieArray = data.body.results.map((value) => {
+      console.log('value is ', value);
+      return new Movie(value);
+    });
+    console.log('movie data is ', data.body.results);
+    res.status(200).send(movieArray);
+  })
+    .catch((error) => {
+      console.log('error', error);
+      res.status(500).send('something went wrong with Movie API');
+    });
+}
+
 function notFoundHandler(req, res) {
   res.status(404).send('Not found!');
 }
@@ -239,6 +264,16 @@ function Trails(obj) {
   this.condition_date = obj.conditionDate;
 }
 
+function Movie(obj) {
+  this.title = obj.title;
+  this.overview = obj.overview;
+  this.average_votes = obj.vote_average;
+  this.total_votes = obj.vote_count;
+  // this.image_url = ;
+  this.popularity = obj.popularity;
+  // this.released_on = ;
+}
+
 // Connect to our database and Start our server! Tell it what port to listen on
 client
   .connect()
@@ -247,13 +282,20 @@ client
       console.log(`Now listening on port ${PORT}`);
     });
   })
-  .catch((err) => {
+  .catch(err => {
     console.log('Error', err);
   });
 
-// app.listen(PORT, () => {
-//   console.log(`Server is now listening on port ${PORT}`);
-// });
+  // client.connect().then( () => {
+//   app.listen(PORT, () => {
+//     console.log(`Now listening on port ${PORT}`);
+//   });
+// })
+// .catch(err => {
+//   console.log('Error', err);
+// })
+
+
 
 // EVERYTHING FROM RAY'S DEMO
 // 'use strict';
